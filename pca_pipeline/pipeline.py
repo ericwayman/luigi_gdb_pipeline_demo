@@ -1,6 +1,5 @@
 import os
 import luigi
-from luigi.postgres import PostgresQuery
 from datetime import date
 from psycopg2.extensions import register_adapter
 from utils import PSQLConn,create_hourly_counts_table,create_pca_input_table,find_principal_components,extract_large_pca_components

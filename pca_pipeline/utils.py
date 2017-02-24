@@ -72,15 +72,12 @@ def create_pca_input_table(conn,input_table, output_table,user_column,id):
         )
         curs.execute(query)
 
-def find_principal_components(conn,input_table,output_table,time_id_col,name_id_col,val_col,percentage_val):
+def find_principal_components(conn,input_table,output_table,percentage_val):
     with conn.cursor() as curs:
         query = curs.mogrify("""
-            SELECT  find_principal_components('%s','%s','%s','%s','%s',%s)
+            SELECT  find_principal_components('%s','%s','%s')
         """,(QuotedIdentifier(input_table),
             QuotedIdentifier(output_table),
-            QuotedIdentifier(time_id_col),
-            QuotedIdentifier(name_id_col),
-            QuotedIdentifier(val_col),
             percentage_val
             )
         )

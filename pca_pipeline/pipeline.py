@@ -25,9 +25,6 @@ class DatabaseConfig(luigi.Config):
 
 class ModelConfig(luigi.Config):
     user_col=luigi.Parameter()
-    time_id_col=luigi.Parameter()
-    name_id_col=luigi.Parameter()
-    val_col=luigi.Parameter()
     percentage_val=luigi.FloatParameter()
     threshold = luigi.FloatParameter()
 
@@ -145,9 +142,6 @@ class RunPCATask(luigi.Task):
         find_principal_components(conn,
                                     input_table=input_table,
                                     output_table=output_table,
-                                    time_id_col=ModelConfig().time_id_col,
-                                    name_id_col=ModelConfig().name_id_col,
-                                    val_col=ModelConfig().val_col,
                                     percentage_val=ModelConfig().percentage_val
                                 )
 

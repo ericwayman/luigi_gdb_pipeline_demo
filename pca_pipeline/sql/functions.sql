@@ -80,9 +80,6 @@ text,text,text,text,text,float8
 CREATE OR REPLACE FUNCTION find_principal_components(
     input_table text,
     output_table text,
-    time_id_col text,
-    name_id_col text,
-    val_col text,
     percentage_val float8)
    RETURNS void AS
 $BODY$
@@ -92,16 +89,16 @@ DECLARE
 
 BEGIN
 
-EXECUTE 'select count(distinct('||time_id_col||')) FROM '||input_table into num_time_int;
-EXECUTE 'select count(distinct('||name_id_col||')) FROM '||input_table into num_users;
+EXECUTE 'select count(distinct(day_id)) FROM '||input_table into num_time_int;
+EXECUTE 'select count(distinct(name_id)) FROM '||input_table into num_users;
 
 EXECUTE 'DROP TABLE IF EXISTS '||output_table;
 EXECUTE 'DROP TABLE IF EXISTS '||output_table||'_mean';
 EXECUTE 'SELECT madlib.pca_sparse_train( '''||input_table||''',
                   '''||output_table||''',
-                  '''||time_id_col||''',
-                  '''||name_id_col||''',
-                  '''||val_col||''',
+                  ''day_id'',
+                  ''name_id'',
+                  ''hourly_count'',
                   '||num_time_int||',
                   '||num_users||',
                   '||percentage_val||'

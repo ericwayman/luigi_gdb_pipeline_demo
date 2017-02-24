@@ -53,10 +53,10 @@ def initialize_user_defined_functions():
 
 
 
-def create_num_flows_for_feature_table(conn,input_table, output_table, user_column):
+def create_hourly_counts_table(conn,input_table, output_table, user_column):
     with conn.cursor() as curs:
         query = curs.mogrify("""
-        SELECT create_num_flows_for_feature_table('%s','%s','%s')
+        SELECT create_hourly_counts_table('%s','%s','%s')
         """,(QuotedIdentifier(input_table),QuotedIdentifier(output_table),QuotedIdentifier(user_column)))
         curs.execute(query)
 

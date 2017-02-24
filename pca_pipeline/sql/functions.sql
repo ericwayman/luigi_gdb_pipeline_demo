@@ -9,10 +9,10 @@ return 'success';
 END;
 $BODY$ LANGUAGE plpgsql VOLATILE;
 ---------------------------------
--- CREATE INPUT TABLE WITH NUMBER OF FLOWS FOR EACH HOUR OF THE DAY FOR EACH USER
+-- CREATE INPUT TABLE WITH hourly counts for each user
 --user_column = user_name
-DROP FUNCTION IF EXISTS create_num_flows_for_feature_table(text,text,text);
-CREATE OR REPLACE FUNCTION create_num_flows_for_feature_table(input_table text,output_table text, user_column text)
+DROP FUNCTION IF EXISTS create_hourly_counts_table(text,text,text);
+CREATE OR REPLACE FUNCTION create_hourly_counts_table(input_table text,output_table text, user_column text)
 RETURNS VOID
 AS
 $BODY$

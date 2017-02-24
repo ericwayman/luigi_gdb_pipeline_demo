@@ -3,7 +3,7 @@ import luigi
 from luigi.postgres import PostgresQuery
 from datetime import date
 from psycopg2.extensions import register_adapter
-from utils import PSQLConn,create_num_flows_for_feature_table,create_pca_input_table,find_principal_components,extract_large_pca_components
+from utils import PSQLConn,create_hourly_counts_table,create_pca_input_table,find_principal_components,extract_large_pca_components
 from utils import QuotedIdentifier
 from utils import initialize_user_defined_functions
 
@@ -66,7 +66,7 @@ class InitializeUserDefinedFunctions(luigi.Task):
     def output(self):
         return luigi.LocalTarget(os.path.join(TARGET_PATH,"initialize_user_defined_functions"))
 
-class CreateNumFlowsForFeatureTable(luigi.Task):
+class CreateHourlyCountsTable(luigi.Task):
     """
     Task to compute required feature for each each feature column over each (day of week, hour of day) time periods
     """
@@ -77,7 +77,7 @@ class CreateNumFlowsForFeatureTable(luigi.Task):
 
     def run(self):
         conn = cred.connect()
-        create_num_flows_for_feature_table(conn,
+        create_hourly_counts_table(conn,
                                     input_table=DatabaseConfig().base_table,
                                     output_table=DatabaseConfig().feature_input_table,
                                     user_column=ModelConfig().user_col
@@ -92,7 +92,7 @@ class CreateNumFlowsForFeatureTable(luigi.Task):
                 out_file.write(str(row))
 
     def output(self):
-        return luigi.LocalTarget(os.path.join(TARGET_PATH,'create_num_flows_for_feature_table'))
+        return luigi.LocalTarget(os.path.join(TARGET_PATH,'create_hourly_counts_table'))
 
 class CreatePCAInputTable(luigi.Task):
     """
@@ -102,7 +102,7 @@ class CreatePCAInputTable(luigi.Task):
     hour_id = luigi.IntParameter()
 
     def requires(self):
-        return [CreateNumFlowsForFeatureTable(date=self.date)]
+        return [CreateHourlyCountsTable(date=self.date)]
 
     def run(self):
         conn = cred.connect()
@@ -209,7 +209,7 @@ class PipelineTask(luigi.WrapperTask):
     def requires(self):
         base_tasks = [
                 InitializeUserDefinedFunctions(date=self.date),
-                CreateNumFlowsForFeatureTable(date=self.date)
+                CreateHourlyCountsTable(date=self.date)
                 ]
         
         ids = list(range(0,24))

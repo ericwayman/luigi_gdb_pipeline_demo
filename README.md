@@ -13,7 +13,7 @@ We break up our workflow into 5 types of tasks Luigi tasks as follows:
 4.  Run the MADlib PCA function to compute the principal direction for each of the 24 flow count matrices.  The MADlib PCA algorithm is computed in parallel across GPDB nodes.
 5. For each of 24 principal directions, Identify users with large entries and write a list of these users with outlier score (magnitude of the entry) to a file to investigate.   
 
-Steps to running: 
+##Steps to running: 
 
 1. Install Pivotal Greenplum Sandbox Virtual Machine.  Available for free download on the [Pivotal Network]
 (https://network.pivotal.io/products/pivotal-gpdb#/releases/567/file_groups/337).

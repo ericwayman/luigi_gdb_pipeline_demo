@@ -4,7 +4,7 @@ from datetime import date
 from psycopg2.extensions import register_adapter
 from utils import PSQLConn,create_hourly_counts_table,create_pca_input_table,find_principal_components,extract_large_pca_components
 from utils import QuotedIdentifier
-from utils import initialize_user_defined_functions
+from utils import initialize_user_defined_functions, test_for_nulls
 
 cred = PSQLConn(os.getenv("GPDB_DATABASE"),
                 os.getenv("GPDB_USER"),
@@ -64,7 +64,7 @@ class InitializeUserDefinedFunctions(luigi.Task):
 
 class CreateHourlyCountsTable(luigi.Task):
     """
-    Task to compute required feature for each each feature column over each (day of week, hour of day) time periods
+    Task to compute table of hourly record counts for each user on each day
     """
     date = luigi.DateParameter()
 
@@ -73,6 +73,7 @@ class CreateHourlyCountsTable(luigi.Task):
 
     def run(self):
         conn = cred.connect()
+        test_for_nulls(conn,table_name=DatabaseConfig().base_table)
         create_hourly_counts_table(conn,
                                     input_table=DatabaseConfig().base_table,
                                     output_table=DatabaseConfig().feature_input_table,
@@ -82,7 +83,7 @@ class CreateHourlyCountsTable(luigi.Task):
             query = curs.mogrify("SELECT * FROM %s LIMIT 1",(QuotedIdentifier(DatabaseConfig().feature_input_table),))
             curs.execute(query)
             rows = curs.fetchall()
-
+        test_for_nulls(conn,table_name=DatabaseConfig().feature_input_table)
         with self.output().open('w') as out_file:
             for row in rows:
                 out_file.write(str(row))
@@ -92,7 +93,7 @@ class CreateHourlyCountsTable(luigi.Task):
 
 class CreatePCAInputTable(luigi.Task):
     """
-    Task to create a PCA input table for data with of given feature_col and (day of week, hour of day) pair from the NumFlowsForFeatureTable
+    Task to create a PCA input table for data with given feature_col and (day of week, hour of day) pair from the NumFlowsForFeatureTable
     """
     date = luigi.DateParameter()
     hour_id = luigi.IntParameter()
@@ -109,7 +110,7 @@ class CreatePCAInputTable(luigi.Task):
                 user_column=ModelConfig().user_col,
                 id=self.hour_id
             )
-
+        test_for_nulls(conn,table_name=output_table)
         with conn.cursor() as curs:
             query = curs.mogrify("SELECT * FROM %s LIMIT 1",(QuotedIdentifier(output_table),))
             curs.execute(query)
@@ -143,7 +144,7 @@ class RunPCATask(luigi.Task):
                                     output_table=output_table,
                                     percentage_val=ModelConfig().percentage_val
                                 )
-
+        test_for_nulls(conn,table_name=output_table)
         with conn.cursor() as curs:
             query = curs.mogrify("SELECT COUNT(*) FROM %s LIMIT 1",(QuotedIdentifier(output_table),))
             curs.execute(query)

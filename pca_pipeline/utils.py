@@ -51,8 +51,6 @@ def initialize_user_defined_functions():
         cmd = f.read()
     return cmd
 
-
-
 def create_hourly_counts_table(conn,input_table, output_table, user_column):
     with conn.cursor() as curs:
         query = curs.mogrify("""
@@ -95,3 +93,37 @@ def extract_large_pca_components(conn,output_table,base_feature_table,pca_table,
                 )
         )
         curs.execute(query)
+
+def test_for_nulls(conn,table_name):
+    """
+    check all columns of table_name to make sure no nulls are present
+    """
+    with conn.cursor() as curs:
+        pieces = table_name.split('.')
+        if len(pieces) == 1:
+            column_query = curs.mogrify("""
+                SELECT column_name from information_schema.columns where table_name = '%s'
+                """,(QuotedIdentifier(pieces[0]),)
+                )
+        else:
+            column_query = curs.mogrify("""
+                SELECT column_name from information_schema.columns where table_name = '%s'  AND table_schema = '%s'
+                """, (QuotedIdentifier(pieces[1]),
+                    QuotedIdentifier(pieces[0])
+                    )
+                )
+        curs.execute(column_query)
+        columns = curs.fetchall()
+        columns =  [c[0] for c in columns]
+        for col in columns:
+            query = curs.mogrify("""
+            SELECT COUNT(*) - COUNT(%s) FROM %s;
+                """,
+                (QuotedIdentifier(col),
+                QuotedIdentifier(table_name)
+                )
+            )
+            curs.execute(query)
+            result = curs.fetchone()
+            num_nulls = result[0]
+            assert num_nulls == 0

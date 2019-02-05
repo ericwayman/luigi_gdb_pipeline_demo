@@ -1,5 +1,6 @@
 # luigi_gdb_pipeline_demo
 An example to illustrate using Luigi to manage a data science workflow in Greenplum Database
+For more info see: http://engineering.pivotal.io/post/luigi-data-science/
 
 ## Use Case Description
 
